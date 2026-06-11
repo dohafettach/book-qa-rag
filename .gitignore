@@ -1,0 +1,14 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Data — books are large and shouldn't be in git
+# But keep the registry so your ingestion history is tracked
+data/*.txt
+data/*.pdf
+
+# Outputs
+outputs/
