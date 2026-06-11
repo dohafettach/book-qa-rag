@@ -18,15 +18,7 @@ from src.config import (
     TOP_K,
 )
 
-# The prompt is the most important design decision in this file.
-#
-# "Use ONLY the context below" is the critical constraint.
-# Without it, GPT would answer from its own training memory —
-# it has read Pride and Prejudice. You'd get an answer, but it
-# wouldn't come from your retrieved chunks, so citations would be meaningless.
-#
-# temperature=0 on the LLM means deterministic output — no creativity,
-# no invention. You want factual answers, not imaginative ones.
+
 PROMPT_TEMPLATE = """\
 You are a literary assistant that answers questions about books.
 Use ONLY the context passages provided below to answer.
@@ -76,26 +68,19 @@ def ask(question: str, book_id: str) -> dict:
             f"POST to /ingest first."
         )
 
-    # Connect to OpenAI embedding model
-    # Same model used at ingest time — this is required.
-    # If you embedded with model A and query with model B,
-    # the vectors live in different spaces and similarity search breaks.
+   
     embeddings = OpenAIEmbeddings(
         model=EMBEDDING_MODEL,
         openai_api_key=OPENAI_API_KEY,
     )
 
-    # Connect to the existing Pinecone index
+   
     vectorstore = PineconeVectorStore(
         index_name=PINECONE_INDEX_NAME,
         embedding=embeddings,
         pinecone_api_key=PINECONE_API_KEY,
     )
 
-    # Build a retriever that only searches chunks from this specific book.
-    # The filter matches the book_id metadata stored during ingest.
-    # Without this filter, a question about Monte Cristo could pull chunks
-    # from War and Peace if they happen to be semantically close.
     retriever = vectorstore.as_retriever(
         search_kwargs={
             "k": TOP_K,
@@ -103,7 +88,6 @@ def ask(question: str, book_id: str) -> dict:
         }
     )
 
-    # The LLM that will read the chunks and write the answer
     llm = ChatOpenAI(
         model=LLM_MODEL,
         temperature=0,
@@ -115,12 +99,6 @@ def ask(question: str, book_id: str) -> dict:
         input_variables=["context", "question"],
     )
 
-    # RetrievalQA wires everything together:
-    #   1. Takes the question
-    #   2. Retriever finds top-K chunks
-    #   3. Chunks are "stuffed" into the prompt as {context}
-    #   4. LLM generates the answer
-    #   5. Source documents are returned alongside the answer
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",
@@ -131,7 +109,6 @@ def ask(question: str, book_id: str) -> dict:
 
     result = qa_chain.invoke({"query": question})
 
-    # Format the source chunks for the response
     sources = [
         {
             "chunk_index": doc.metadata.get("chunk_index", "?"),

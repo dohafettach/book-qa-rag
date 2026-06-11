@@ -1,23 +1,3 @@
-"""
-Book registry: tracks which books have been ingested.
-The registry is a simple JSON file stored in data/registry.json.
-
-Each entry looks like:
-{
-  "book-id": {
-    "book_id":  "count-of-monte-cristo",
-    "title":    "The Count of Monte Cristo",
-    "author":   "Alexandre Dumas",
-    "file":     "data/count-of-monte-cristo.txt",
-    "chunks":   1823,
-    "ingested_at": "2024-06-10T14:32:00"
-  }
-}
-
-This is how the API knows what books exist and what their metadata is.
-Without a registry you'd have to ask Pinecone — which only stores vectors,
-not human-readable book info.
-"""
 
 import os
 import json
