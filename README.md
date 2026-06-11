@@ -41,7 +41,7 @@ Your book (.txt or .pdf)
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-username/book-qa-rag.git
+git clone https://github.com/dohafettach/book-qa-rag.git
 cd book-qa-rag
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
